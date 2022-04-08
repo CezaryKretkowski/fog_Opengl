@@ -4,8 +4,10 @@
 
 #ifndef UNTITLED3_PARTICLE_H
 #define UNTITLED3_PARTICLE_H
+
 #include "Clouds.h"
 #include "DirectionStrategy.h"
+
 float F_RAND(float LO, float HI);
 
 enum Mode {
@@ -16,7 +18,7 @@ enum Mode {
 };
 
 
-class Particle : public Clouds{
+class Particle : public Clouds {
     /* data */
     bool active;
     float life;
@@ -24,16 +26,15 @@ class Particle : public Clouds{
     glm::vec3 pos;
     glm::vec3 externals;
     glm::vec3 gravity;
-    DirectionStrategy *strategy= NULL;
-
+    DirectionStrategy *strategy = NULL;
     glm::vec3 emitterPosition;
     glm::vec3 emitterDimensions;
-
     glm::vec3 calculatePosition();
 
 public:
 
     float fade;
+    float fadeTime=100;
     float speed;
     glm::vec3 color;
     glm::vec3 direction;
@@ -70,6 +71,12 @@ public:
     void setEmitterPosition(glm::vec3 emitterPos);
 
     void setMode(int mode) { this->mode = mode; }
+
     void setExternal(glm::vec3 external) { this->externals = external; }
+
+    void draw();
+
+
 };
+
 #endif //UNTITLED3_PARTICLE_H

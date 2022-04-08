@@ -6,25 +6,22 @@ layout(location=2)in vec2 uvMap;
 out vec4 clr;
 out vec2 UV;
 
+
 uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
-
+uniform vec3 ParticlePos;
 
 void main(){
+    vec3 right=vec3(V[0][0],V[1][0],V[2][0]);
+    vec3 up=vec3(V[0][1],V[1][1],V[2][1]);
 
-    mat4 view=mat4(1.0);
-    mat4 model=mat4(1.0);
-
-    view[3]=V[3];
-    model[3]=P[3];
-
-
-    mat3 invViewRot = inverse(mat3(V));
-    vec3 worldPos        = invViewRot * pos;
+    vec3 worldPos = ParticlePos
+    +right*pos.x
+    +up*pos.y;
 
 
 
-    gl_Position=P*V*M*vec4(worldPos,1.0f);
+    gl_Position=P*V*vec4(worldPos,1.0f);
     UV=uvMap;
 }

@@ -13,6 +13,7 @@ protected:
     GLuint Vid;
     GLuint Mid;
     GLuint alphaid;
+    GLuint particlePosID;
     float alhpa=1.0;
     float color[4] = {1.0f,1.0f,1.0f,1.0};
 
@@ -62,19 +63,10 @@ public:
         Pid=glGetUniformLocation( shaderID,"P");
         Vid=glGetUniformLocation( shaderID,"V");
         Mid=glGetUniformLocation( shaderID,"M");
+        particlePosID=glGetUniformLocation(shaderID,"ParticlePos");
         alphaid=glGetUniformLocation( shaderID,"alpha");
-   }
-    void draw(){
-        glBindVertexArray(vao);
-        glUniform1i(textureID,0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
 
-        glUniformMatrix4fv(Pid,1,GL_FALSE,&projectionMatrix[0][0]);
-        glUniformMatrix4fv(Vid,1,GL_FALSE,&viewMatrix[0][0]);
-        glUniformMatrix4fv(Mid,1,GL_FALSE,&modelMatrix[0][0]);
-        glUniform1f(alphaid,alhpa);
-        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-    }
+   }
+
 };
 #endif //UNTITLED3_CLOUDS_H

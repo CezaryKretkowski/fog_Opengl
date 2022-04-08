@@ -9,5 +9,7 @@ uniform float alpha;
 
 void main(){
 	vec4 buff=texture(text, UV);
-	color=vec4(buff.r,buff.g,buff.b,buff.a*alpha);
+	if(buff.a<0.1)
+        discard;
+	color=vec4(buff.r*0.8,buff.g*0.8,buff.b*0.8,buff.a*alpha);
 }

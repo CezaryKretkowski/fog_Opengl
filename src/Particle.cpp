@@ -42,9 +42,11 @@ void Particle::live(float tt) {
     pos += direction * (tt/speed);
     direction += gravity*(tt/speed);
     direction += externals*(tt/speed);
-    life -= fade * tt/10;
+    life -= fade * tt/fadeTime;
     if (life <= 0.0f) {
+
         activate();
+
     }
 }
 
@@ -71,3 +73,17 @@ Particle::~Particle() {
     glDeleteBuffers(1,&colorBuffer);
 
 }
+void Particle::draw(){
+    glBindVertexArray(vao);
+    glUniform1i(textureID,0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glUniformMatrix4fv(Pid,1,GL_FALSE,&projectionMatrix[0][0]);
+    glUniformMatrix4fv(Vid,1,GL_FALSE,&viewMatrix[0][0]);
+    glUniformMatrix4fv(Mid,1,GL_FALSE,&modelMatrix[0][0]);
+    glUniform1f(alphaid,alhpa);
+    glUniform3f(particlePosID,pos.x,pos.y,pos.z);
+    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+}
+

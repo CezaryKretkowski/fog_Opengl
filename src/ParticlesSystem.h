@@ -25,8 +25,8 @@ class FogEffect : public DirectionStrategy {
         float fi = 3.14f / 4; // 45 stopni w górę
         float psi = F_RAND(0.0f, 1.0f) * (3.14f * 2); // 0-360 stopni wokół osi Y
         float rr = F_RAND(0.0f, 1.0f) * 12 + 16;
-        glm::vec3 direction(rr * cos(fi) * cos(psi), 0.0f, rr * cos(fi) * sin(psi));
-        return direction;
+        glm::vec3 direction(rr * cos(fi) * cos(psi), 2.1f, rr * cos(fi) * sin(psi));
+        return vec3 (0.0f,0.0f,0.0f);
     }
 };
 
@@ -35,16 +35,17 @@ class ParticlesSystem {
     GLuint core1;
     int MAX_PART = 1000;
     Particle particles[1000];
-    float ACTIVATE_TIME = 0.00001f;
+    float ACTIVATE_TIME = 0.1f;
     float act_time = 0.0f;
     float lastTime;
     RenderableObject cube;
-    Node particlesList[1000];
+    Node particlesList[1500];
     std::vector<glm::vec3> zero;
     GLuint MatrixID;
     GLuint ViewMatrixID;
     GLuint ModelMatrixID;
     GLuint LightID;
+
 
     void sortParticles(){
 
@@ -62,7 +63,8 @@ class ParticlesSystem {
 public:
     void setUp(GLFWwindow *window) {
         glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         core0 = LoadShaders("shaders/verShader.glsl", "shaders/fragShaders.glsl");
@@ -81,19 +83,23 @@ public:
         GLuint out[] = {NULL, NULL};
         FogEffect *startegy = new FogEffect();
         LoadTexture(core0, "resource/ParticleCloudWhite.png", "text", out);
-        sortParticles();
+
 
         for (int  i=0; i<MAX_PART; i++) {
+
             particles[i].initFromArrary(vert, zero, uv);
             particles[i].setMode(CUBE);
             particles[i].setEmitterPosition(glm::vec3(-1.0f,0.0f,0.0f));
-            particles[i].setDimension(glm::vec3(3.0f, 3.0f, 3.0f));
+            particles[i].setDimension(glm::vec3(4.0f, 2.0f, 4.0f));
             particles[i].initAtribiuts(core0);
-            particles[i].speed = 500;
+            particles[i].speed = 100;
+            particles[i].fadeTime= 1;
+            particles[i].setGravity(glm::vec3(0.0f,0.0f,0.0f));
             particles[i].setTexture(out[0], out[1]);
             particles[i].setDirectionStrategy(startegy);
 
         }
+
     }
 
     void update(GLFWwindow *window) {
@@ -101,14 +107,14 @@ public:
         computeMatricesFromInputs(window);
         glUseProgram(0);
         glUseProgram(core1);
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
+
+
         glm::vec3 lightPos1 = glm::vec3(-4, 4, -4);
         glUniform3f(LightID, lightPos1.x, lightPos1.y, lightPos1.z);
         cube.setProjectionMatrix(getProjectionMatrix());
         cube.setViewMatrix(getViewMatrix());
         cube.draw(MatrixID,ViewMatrixID,ModelMatrixID);
-        glDisable(GL_DEPTH_TEST);
+
         glUseProgram(0);
         glUseProgram(core0);
 
@@ -121,28 +127,43 @@ public:
         while (i < MAX_PART) {//(int i = 0; i < MAX_PART; i++) {
 
             if (particles[i].isActive()) {
+
                 particles[i].live(times);
+
             } else {
                 if (act_time >= ACTIVATE_TIME) {
                     act_time = 0.0f;
                     particles[i].activate();
+
                 }
             }
             i++;
         }
 
+
         sortParticles();
         for (int i = 0 ; i<MAX_PART; i++) {
             int id=particlesList[i].id;
-            particles[id].setAlpha(particles[id].getLive()-0.9);
+            float alpha=0.2;
+            float li=particles[id].getLive();
+            if(li>0.8)
+                alpha=1-li;
+            if(li<0.8&&li>0.2)
+                alpha=0.2;
+            if(li<0.2)
+                alpha=li;
+
+            particles[id].setAlpha( alpha);
             particles[id].setModelMatrix(glm::mat4(1));
             particles[id].translate(particles[id].getPos());
             particles[id].setViewMatrix(getViewMatrix());
-            //printf("%f  %f  %f\n",particles[i].getPos()[0],particles[i->id].getPos()[1],particles[i->id].getPos()[2]);
+            //printf("%  %f  %f\n",particles[i].getPos()[0],particles[i->id].getPos()[1],particles[i->id].getPos()[2]);
             particles[id].setProjectionMatrix(getProjectionMatrix());
             particles[id].draw();
 
+
         }
+
 
         lastTime = nowTime;
     }
