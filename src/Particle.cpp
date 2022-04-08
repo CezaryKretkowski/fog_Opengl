@@ -42,7 +42,7 @@ void Particle::live(float tt) {
     pos += direction * (tt/speed);
     direction += gravity*(tt/speed);
     direction += externals*(tt/speed);
-    life -= fade * tt;
+    life -= fade * tt/10;
     if (life <= 0.0f) {
         activate();
     }

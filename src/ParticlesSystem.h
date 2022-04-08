@@ -25,7 +25,7 @@ class FogEffect : public DirectionStrategy {
         float fi = 3.14f / 4; // 45 stopni w górę
         float psi = F_RAND(0.0f, 1.0f) * (3.14f * 2); // 0-360 stopni wokół osi Y
         float rr = F_RAND(0.0f, 1.0f) * 12 + 16;
-        glm::vec3 direction(rr * cos(fi) * cos(psi), rr * sin(fi), rr * cos(fi) * sin(psi));
+        glm::vec3 direction(rr * cos(fi) * cos(psi), 0.0f, rr * cos(fi) * sin(psi));
         return direction;
     }
 };
@@ -39,7 +39,7 @@ class ParticlesSystem {
     float act_time = 0.0f;
     float lastTime;
     RenderableObject cube;
-    std::vector<Node>particlesList;
+    Node particlesList[1000];
     std::vector<glm::vec3> zero;
     GLuint MatrixID;
     GLuint ViewMatrixID;
@@ -47,23 +47,22 @@ class ParticlesSystem {
     GLuint LightID;
 
     void sortParticles(){
-        particlesList.clear();
+
         for(int i=0;i<MAX_PART;i++){
             Node p;
             vec3 w1=particles[i].getPos();
             vec3 w2=getPosition();
             p.id=i;
             p.distance= abs(glm::length2(w1-w2));
-            particlesList.push_back(p);
+            particlesList[i]=p;
         }
-        std::sort(particlesList.begin(),particlesList.end());
+        std::sort(&particlesList[0],&particlesList[MAX_PART]);
 
     }
 public:
     void setUp(GLFWwindow *window) {
         glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-        glEnable(GL_DEPTH_TEST);
-       glDepthFunc(GL_LESS);
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         core0 = LoadShaders("shaders/verShader.glsl", "shaders/fragShaders.glsl");
@@ -102,12 +101,14 @@ public:
         computeMatricesFromInputs(window);
         glUseProgram(0);
         glUseProgram(core1);
-
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
         glm::vec3 lightPos1 = glm::vec3(-4, 4, -4);
         glUniform3f(LightID, lightPos1.x, lightPos1.y, lightPos1.z);
         cube.setProjectionMatrix(getProjectionMatrix());
         cube.setViewMatrix(getViewMatrix());
         cube.draw(MatrixID,ViewMatrixID,ModelMatrixID);
+        glDisable(GL_DEPTH_TEST);
         glUseProgram(0);
         glUseProgram(core0);
 
@@ -131,15 +132,15 @@ public:
         }
 
         sortParticles();
-        for (std::vector<Node>::iterator i = particlesList.begin() ; i<particlesList.end(); i++) {
-
-            particles[i->id].setAlpha(particles[i->id].getLive());
-            particles[i->id].setModelMatrix(glm::mat4(1));
-            particles[i->id].translate(particles[i->id].getPos());
-            particles[i->id].setViewMatrix(getViewMatrix());
+        for (int i = 0 ; i<MAX_PART; i++) {
+            int id=particlesList[i].id;
+            particles[id].setAlpha(particles[id].getLive()-0.9);
+            particles[id].setModelMatrix(glm::mat4(1));
+            particles[id].translate(particles[id].getPos());
+            particles[id].setViewMatrix(getViewMatrix());
             //printf("%f  %f  %f\n",particles[i].getPos()[0],particles[i->id].getPos()[1],particles[i->id].getPos()[2]);
-            particles[i->id].setProjectionMatrix(getProjectionMatrix());
-            particles[i->id].draw();
+            particles[id].setProjectionMatrix(getProjectionMatrix());
+            particles[id].draw();
 
         }
 
